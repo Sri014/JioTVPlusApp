@@ -21,9 +21,9 @@ android {
     }
 
     // Default debug signing config (GitHub Actions me ye pehle se hota hai)
-    signingConfigs {
+        signingConfigs {
         getByName("debug") {
-            storeFile = file(System.getProperty("user.home") + "/.android/debug.keystore")
+            storeFile = file("debug.keystore") // Ye line change ki hai
             storePassword = "android"
             keyAlias = "androiddebugkey"
             keyPassword = "android"
