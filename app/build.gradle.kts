@@ -8,12 +8,6 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
-// Load keystore properties
-val keystorePropsFile = rootProject.file("app/keystore.properties")
-val keystoreProps = Properties().also { props ->
-    if (keystorePropsFile.exists()) props.load(keystorePropsFile.inputStream())
-}
-
 android {
     namespace = "com.jiotvplus.app"
     compileSdk = 35
@@ -26,34 +20,24 @@ android {
         versionName = "1.0.1"
     }
 
+    // Default debug signing config (GitHub Actions me ye pehle se hota hai)
     signingConfigs {
-        // AGP pre-creates "debug" — use getByName to reconfigure it
         getByName("debug") {
-            storeFile = file(keystoreProps["DEBUG_STORE_FILE"] as? String ?: "jiotvplus-debug.jks")
-            storePassword = keystoreProps["DEBUG_STORE_PASSWORD"] as? String ?: "jiotvplus123"
-            keyAlias = keystoreProps["DEBUG_KEY_ALIAS"] as? String ?: "jiotvplus"
-            keyPassword = keystoreProps["DEBUG_KEY_PASSWORD"] as? String ?: "jiotvplus123"
-        }
-        // Release config only created when keystore values are provided
-        if ((keystoreProps["RELEASE_STORE_PASSWORD"] as? String).orEmpty().isNotBlank()) {
-            maybeCreate("release").apply {
-                storeFile = file(keystoreProps["RELEASE_STORE_FILE"] as String)
-                storePassword = keystoreProps["RELEASE_STORE_PASSWORD"] as String
-                keyAlias = keystoreProps["RELEASE_KEY_ALIAS"] as String
-                keyPassword = keystoreProps["RELEASE_KEY_PASSWORD"] as String
-            }
+            storeFile = file(System.getProperty("user.home") + "/.android/debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
         }
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = true
+            isMinifyEnabled = false // Build fail na ho isliye false kiya
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            val releaseSigning = signingConfigs.findByName("release")
-            signingConfig = releaseSigning ?: signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("debug") // Release ko bhi debug se sign karo
         }
         debug {
             isDebuggable = true
